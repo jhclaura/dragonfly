@@ -20,13 +20,13 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0.32974696, g: 0.3582695, b: 0.41911763, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028364, g: 0.22571398, b: 0.30692267, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -1162,11 +1162,6 @@ GameObject:
   - component: {fileID: 1552424564}
   - component: {fileID: 1552424563}
   - component: {fileID: 1552424558}
-  - component: {fileID: 1552424562}
-  - component: {fileID: 1552424561}
-  - component: {fileID: 1552424560}
-  - component: {fileID: 1552424559}
-  - component: {fileID: 1552424557}
   m_Layer: 8
   m_Name: Agent
   m_TagString: Untagged
@@ -1188,21 +1183,6 @@ Transform:
   m_Father: {fileID: 254020095}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1552424557
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 114254408603438930, guid: e5da219025532a74e9ebf6977fc17093,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1552424555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 073a49e84f5bf4fc99b9f8a4d922f686, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Radius: {x: 1, y: 0.5, z: 1}
-  RandomizeRotation: 1
-  AllowedAxes: {x: 0, y: 1, z: 0}
 --- !u!114 &1552424558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1223,92 +1203,16 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   flyScenario: 0
-  descendSpeed: 10
+  descendSpeed: 15
   descendWanderSide: 0.5
   wanderRadius: 1.5
   minPauseTime: 3
   maxPauseTime: 5
+  wanderMacCount: 5
   landMaxStops: 3
   leaveSpeed: 20
   leaveWanderSide: 0.2
   scareMaxCount: 3
---- !u!114 &1552424559
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 114744855615822808, guid: e5da219025532a74e9ebf6977fc17093,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1552424555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2fadd96e71d04da1849fa0f42d60409, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _weight: 1
-  _targetPoint: {x: 0, y: 0, z: 0}
-  _considerVelocity: 0
-  _defaultToCurrentPosition: 1
---- !u!114 &1552424560
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 114309420288414872, guid: e5da219025532a74e9ebf6977fc17093,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1552424555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b50d9a19ad91a4e51ae1bebb0dcc1e01, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _weight: 0.01
-  _maxLatitudeSide: 1
-  _maxLatitudeUp: 0.5
-  _smoothRate: 0.05
---- !u!114 &1552424561
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 114201368753213180, guid: e5da219025532a74e9ebf6977fc17093,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1552424555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31e793789488245609c7ee2d806c6d32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _weight: 1
-  _maximumDistance: 2.5
-  _tetherPosition: {x: 0, y: 0, z: 0}
---- !u!114 &1552424562
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 114586202870415522, guid: e5da219025532a74e9ebf6977fc17093,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1552424555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdaa54b947d9546e3bc45d706993c55c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _drawGizmos: 0
-  _center: {x: 0, y: 0, z: 0}
-  _radius: 0.05
-  _minSpeedForTurning: 0.1
-  _movementPriority: 0
-  _turnTime: 0.5
-  _mass: 1
-  _allowedMovementAxes: {x: 1, y: 1, z: 1}
-  _arrivalRadius: 0.1
-  _maxSpeed: 0.2
-  _maxForce: 2
-  _canMove: 0
-  _queueName: Steering
-  _tickLength: 0.1
-  _maxQueueProcessedPerUpdate: 20
-  _traceAdjustments: 0
-  _accelerationRate: 5
-  _decelerationRate: 8
 --- !u!135 &1552424563
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1658,8 +1562,8 @@ Camera:
   m_GameObject: {fileID: 2034182731}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.22631922, g: 0.26984215, b: 0.33823532, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0

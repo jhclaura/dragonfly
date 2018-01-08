@@ -27,7 +27,7 @@ public class Dragonfly : MonoBehaviour {
     private enum FlyStatus
     {
         ENTER,
-        LAND,
+        LANDING,
         LANDED,
         WANDER,
         SCARED,
@@ -50,6 +50,8 @@ public class Dragonfly : MonoBehaviour {
     public float wanderRadius = 1.5f;
     public float minPauseTime = 3f;
     public float maxPauseTime = 5f;
+    public int wanderMacCount = 5;
+    private int wanderCount = 0;
 
     [Header("Land")]
     public int landMaxStops = 3;
@@ -93,44 +95,9 @@ public class Dragonfly : MonoBehaviour {
     public System.Action OnWanderFinish;
     public System.Action OnLeaveFinish;
 
-
-
-    /////////////////
-    /// FUNCTIONS ///
-    /////////////////
-    private void OnEnable()
-    {
-        if(_autoVehicle==null)
-        {
-            _autoVehicle = GetComponent<AutonomousVehicle>();
-            _toPoint = GetComponent<SteerForPoint>();
-            _toWander = GetComponent<SteerForWander>();
-            _toTether = GetComponent<SteerForTether>();
-        }
-
-        if (_toPoint != null)
-        {
-            _toPoint.OnArrival += (_) => RestBeforeNewTarget();
-            _toPoint.enabled = false;
-        }
-
-        if (_toWander != null)
-        {
-            _toWander.enabled = false;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (_toPoint != null)
-            _toPoint.OnArrival -= (_) => RestBeforeNewTarget();
-    }
-
-    private void Start()
-    {
-        _autoVehicle.CanMove = false;
-    }
-
+    /////////////////////////////////////////////////////////////////////////////
+    /// General
+    /////////////////////////////////////////////////////////////////////////////
     private void Update()
     {
         // For triggerin event in Editor to test
@@ -150,7 +117,6 @@ public class Dragonfly : MonoBehaviour {
             //if (Physics.Raycast(transform.position, Vector3.down, out hit, 20f)) {
             //    descendTarget = hit.point;
             //}
-
             Debug.Log(descendTarget);
             flyStatus = FlyStatus.ENTER;
         }
@@ -161,7 +127,7 @@ public class Dragonfly : MonoBehaviour {
                 if (OnWanderFinish != null)
                     OnWanderFinish();
             }
-            flyStatus = FlyStatus.LAND;
+            flyStatus = FlyStatus.LANDING;
             FindLandTarget();
         }
         else if (Input.GetKeyDown("3"))
@@ -175,7 +141,6 @@ public class Dragonfly : MonoBehaviour {
             Debug.Log("Start leaving");
         }
 #endif
-
         if (!CanMove)
             return;
 
@@ -203,7 +168,6 @@ public class Dragonfly : MonoBehaviour {
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, lerpRate * deltaTime / turnTime);
         transform.position = Vector3.Lerp(transform.position, targetPosition, lerpRate * deltaTime);
 
-
         // Update models follow agent, except rot x & z
         model.transform.position = transform.position;
         Vector3 newRot = transform.eulerAngles;
@@ -219,6 +183,7 @@ public class Dragonfly : MonoBehaviour {
     /////////////////////////////////////////////////////////////////////////////
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("on trigger enter!");
         scareCount++;
         switch (flyStatus)
         {
@@ -240,7 +205,7 @@ public class Dragonfly : MonoBehaviour {
         // fly in
         targetPosition = Vector3.MoveTowards(transform.position, descendTarget, descendSpeed * deltaTime);
         //small random x & z
-        targetPosition.x += Mathf.Sin(Time.time) * ((Mathf.Cos(Time.time) + 1f) / 2f * descendWanderSide);
+        targetPosition.x += Mathf.Sin(Time.time*4f) * ((Mathf.Cos(Time.time) + 1f) / 4f * descendWanderSide);
 
         // OnFlyInFinish
         if((descendTarget - transform.position).sqrMagnitude < 1f)
@@ -253,7 +218,7 @@ public class Dragonfly : MonoBehaviour {
                 StartCoroutine(Wandering());
             }
             else {
-                flyStatus = FlyStatus.LAND;
+                flyStatus = FlyStatus.LANDING;
                 FindLandTarget();
             }
 
@@ -269,22 +234,32 @@ public class Dragonfly : MonoBehaviour {
         {
             yield return new WaitForSeconds(Random.Range(minPauseTime, maxPauseTime));
 
+            if (wanderCount > wanderMacCount)
+            {
+                Debug.Log("Max wander! Leaving now.");
+                flyStatus = FlyStatus.LEAVE;
+                yield return null;
+            }
+                
             // wander
             Vector3 newTarget = Random.insideUnitSphere * wanderRadius;
             newTarget.y = Mathf.Clamp(newTarget.y, -0.5f, 0.5f);
             targetPosition += newTarget;
+
+            wanderCount++;
         }
     }
 
     public void FindLandTarget()
     {
-        if(hasLandTarget)
+        if (hasLandTarget)
         {
             StartCoroutine(Landing());
         }
         else {
+            Debug.Log("Try to find target.");
             StartCoroutine(FindTarget());
-        }            
+        }
     }
 
     IEnumerator FindTarget()
@@ -315,10 +290,9 @@ public class Dragonfly : MonoBehaviour {
 
         while ((LandTarget - transform.position).sqrMagnitude > 0.05f * 0.05f)
         {
-            targetPosition = Vector3.MoveTowards(transform.position, LandTarget, leaveSpeed * deltaTime);
+            targetPosition = Vector3.MoveTowards(transform.position, LandTarget, leaveSpeed * 2f * deltaTime);
             yield return null;
         }
-
         Debug.Log("Maybe landed~");
 
         // change orientation to things normal
@@ -327,7 +301,8 @@ public class Dragonfly : MonoBehaviour {
         {
             landNormal = hit.normal;
             landed = true;
-            targetRotation = Quaternion.Euler(landNormal);  // doesn't seem to be right...
+            //targetRotation = Quaternion.Euler(landNormal);  // doesn't seem to be right...
+            targetRotation = Quaternion.LookRotation(Vector3.up, landNormal);  // doesn't seem to be right...
 
             if (OnLandFinish != null)
                 OnLandFinish();
@@ -351,7 +326,10 @@ public class Dragonfly : MonoBehaviour {
     {
         Debug.Log("Landed And Chilling");
 
-        yield return new WaitForSeconds(maxPauseTime);
+        while(flyStatus==FlyStatus.LANDED)
+        {
+            yield return new WaitForSeconds(maxPauseTime);
+        }
 
         landed = false;
         hasLandTarget = false;
@@ -361,7 +339,11 @@ public class Dragonfly : MonoBehaviour {
             flyStatus = FlyStatus.LEAVE;
             Debug.Log("Start leaving");
         }
-        else 
+        else if(flyStatus != FlyStatus.LANDED)
+        {
+            yield break;
+        }
+        else
         {            
             StartCoroutine(FlyAway(LandTarget - transform.position, 5f, false, FlyStatus.LANDED));
         }
@@ -376,6 +358,7 @@ public class Dragonfly : MonoBehaviour {
             // TODO: cancel LandedAndChilling()!!
 
             Debug.Log("Target moves! Ahhh");
+            StopCoroutine(LandedAndChilling());
             landed = false;
             hasLandTarget = false;
 
@@ -401,14 +384,12 @@ public class Dragonfly : MonoBehaviour {
         else
             targetPosition = transform.position + direction;
         
-        yield return null;
-
         yield return new WaitForSeconds(waitTime);
 
         // do what it was doing
         if(flyStatus == FlyStatus.LANDED)
         {
-            flyStatus = FlyStatus.LAND;
+            flyStatus = FlyStatus.LANDING;
             FindLandTarget();
         }
         else
@@ -436,24 +417,14 @@ public class Dragonfly : MonoBehaviour {
         }
     }
 
-
-    private void RestBeforeNewTarget()
+    /////////////////////////////////////////////////////////////////////////////
+    /// Utilities
+    /////////////////////////////////////////////////////////////////////////////
+    public void ResetBehavior()
     {
-        StartCoroutine(Rest());
-    }
+        // all the counts to be 0
 
-    private IEnumerator Rest()
-    {
-        yield return new WaitForSeconds(Random.Range(minPauseTime, maxPauseTime));
-        FindNewTarget();
-    }
-
-    private void FindNewTarget()
-    {
-        Vector3 newPos;
-        GetRandomPoint(transform.position, wanderRadius, out newPos);
-        _toPoint.TargetPoint = newPos;
-        _toPoint.enabled = true;
+        // 
     }
 
     private bool GetRandomPoint(Vector3 center, float range, out Vector3 result)
@@ -472,7 +443,6 @@ public class Dragonfly : MonoBehaviour {
             {
                 if (debugMode)
                     Debug.DrawRay(center, newDir * newRange, Color.green, 1f);
-
                 result = center + newDir * newRange;
                 return true;
             }
@@ -486,6 +456,4 @@ public class Dragonfly : MonoBehaviour {
         result.z *= 0.5f;
         return false;
     }
-
-
 }
